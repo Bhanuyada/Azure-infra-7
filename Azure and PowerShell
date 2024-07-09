@@ -1,0 +1,219 @@
+
+
+---
+
+# Azure and PowerShell Task Completion Guide
+
+## Task 1: Azure CLI Operations
+
+### 1.1 Understanding Azure CLI
+- **Watch the Video**: [Azure CLI Basics](https://www.youtube.com/watch?v=OQwQmikCLs4&pp=ygUWYXp1cmUgYWN0aXZlIGRpcmVjdG9yeQ%3D%3D)
+- **Read the Documentation**: [What is Azure CLI](https://learn.microsoft.com/en-us/cli/azure/what-is-azure-cli)
+
+### 1.2 Azure Account Setup
+1. **Create a New Azure Account**: Sign up on the [Azure Portal](https://azure.microsoft.com/en-us/free/) if you don’t have an account.
+2. **Log in to Azure CLI**: 
+    ```sh
+    az login
+    ```
+
+### 1.3 User and Group Management
+1. **Create Test Users**:
+    ```sh
+    az ad user create --display-name "Test User" --user-principal-name testuser@yourdomain.com --password "Password123!"
+    ```
+2. **Create Test Groups**:
+    ```sh
+    az ad group create --display-name "Test Group" --mail-nickname "testgroup"
+    ```
+
+### 1.4 RBAC Role Assignment
+1. **Assign Contributor Role to a User**:
+    ```sh
+    az role assignment create --assignee testuser@yourdomain.com --role "Contributor" --scope /subscriptions/{subscription-id}
+    ```
+
+### 1.5 Custom Role Creation and Assignment
+1. **Create a Custom Role**:
+    ```sh
+    az role definition create --role-definition '{
+      "Name": "Custom Role",
+      "Description": "Custom role to manage storage",
+      "Actions": [
+        "Microsoft.Storage/*"
+      ],
+      "AssignableScopes": [
+        "/subscriptions/{subscription-id}"
+      ]
+    }'
+    ```
+2. **Assign Custom Role to a User**:
+    ```sh
+    az role assignment create --assignee testuser@yourdomain.com --role "Custom Role" --scope /subscriptions/{subscription-id}
+    ```
+
+### 1.6 Subscription Observation
+1. **List Subscriptions**:
+    ```sh
+    az account list --output table
+    ```
+
+## Task 2: Creating Resources Using Azure CLI
+
+### 2.1 Create a Virtual Machine and Virtual Network
+- **Watch the Video**: [Create VM and VNet using Azure CLI](https://www.youtube.com/watch?v=DOywwse_j8I)
+- **Read the Documentation**: [Azure CLI Documentation](https://learn.microsoft.com/en-us/powershell/azure/what-is-azure-powershell?view=azps-9.3.0)
+
+1. **Create a Resource Group**:
+    ```sh
+    az group create --name MyResourceGroup --location eastus
+    ```
+2. **Create a Virtual Network**:
+    ```sh
+    az network vnet create --resource-group MyResourceGroup --name MyVNet --subnet-name MySubnet
+    ```
+3. **Create a Public IP Address**:
+    ```sh
+    az network public-ip create --resource-group MyResourceGroup --name MyPublicIP --allocation-method Static
+    ```
+4. **Create a Network Security Group**:
+    ```sh
+    az network nsg create --resource-group MyResourceGroup --name MyNSG
+    ```
+5. **Create a Network Interface**:
+    ```sh
+    az network nic create --resource-group MyResourceGroup --name MyNIC --vnet-name MyVNet --subnet MySubnet --network-security-group MyNSG --public-ip-address MyPublicIP
+    ```
+6. **Create a Virtual Machine**:
+    ```sh
+    az vm create --resource-group MyResourceGroup --name MyVM --image Win2019Datacenter --admin-username azureuser --admin-password 'Password123!' --nics MyNIC
+    ```
+
+## Task 3: Azure Policies and Templates
+
+### 3.1 Azure PowerShell Learning
+- **Read the Documentation**: [What is Azure PowerShell](https://learn.microsoft.com/en-us/powershell/azure/what-is-azure-powershell?view=azps-9.3.0)
+
+### 3.2 Create and Assign a Policy
+- **Watch the Video**: [Azure Policy](https://www.youtube.com/watch?v=4wGns611G4w&pp=ygUMYXp1cmUgcG9saWN5)
+- **Read the Documentation**: [Azure Resource Manager Templates Overview](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/overview)
+
+1. **Create a Policy Definition**:
+    ```json
+    {
+      "properties": {
+        "displayName": "Require a tag on resources",
+        "policyType": "BuiltIn",
+        "mode": "All",
+        "metadata": {
+          "version": "1.0.0",
+          "category": "Tags"
+        },
+        "parameters": {
+          "tagName": {
+            "type": "String",
+            "metadata": {
+              "description": "Name of the tag",
+              "displayName": "Tag Name",
+              "strongType": "tagName"
+            }
+          }
+        },
+        "policyRule": {
+          "if": {
+            "field": "[concat('tags[', parameters('tagName'), ']')]",
+            "exists": "false"
+          },
+          "then": {
+            "effect": "audit"
+          }
+        }
+      }
+    }
+    ```
+
+2. **Assign the Policy at Subscription Level**:
+    ```sh
+    az policy assignment create --name "RequireTag" --scope /subscriptions/{subscription-id} --policy {policy-definition-id}
+    ```
+
+## Task 4: Azure Key Vault Management
+
+### 4.1 Key Vault Creation and Configuration
+- **Watch the Video**: [Create an Azure Key Vault](https://www.youtube.com/watch?v=JDRixckApxM&pp=ygUPYXp1cmUga2V5IHZhdWx0)
+
+1. **Create an Azure Key Vault**:
+    ```sh
+    az keyvault create --name MyKeyVault --resource-group MyResourceGroup --location eastus
+    ```
+
+### 4.2 Store Secrets in Key Vault
+1. **Store a Secret**:
+    ```sh
+    az keyvault secret set --vault-name MyKeyVault --name "DatabasePassword" --value "h@Sh1CoR3!"
+    ```
+
+### 4.3 Configure Access Policies
+1. **Configure Access Policies**:
+    ```sh
+    az keyvault set-policy --name MyKeyVault --upn user@yourdomain.com --secret-permissions get list set delete
+    ```
+
+### 4.4 Retrieve Secret Using Azure CLI
+1. **Retrieve a Secret**:
+    ```sh
+    az keyvault secret show --name "DatabasePassword" --vault-name "MyKeyVault" --query "value"
+    ```
+
+## Task 5: Create a VM Using PowerShell
+
+### 5.1 VM Creation Using PowerShell
+- **Watch the Video**: [Create a VM Using PowerShell](https://www.youtube.com/watch?v=-SRk0hHa-S0)
+
+1. **Login to Azure**:
+    ```powershell
+    Connect-AzAccount
+    ```
+
+2. **Define Variables**:
+    ```powershell
+    $resourceGroup = "MyResourceGroup"
+    $location = "East US"
+    $vmName = "MyVM"
+    $cred = Get-Credential
+    ```
+
+3. **Create a Virtual Network**:
+    ```powershell
+    New-AzVirtualNetwork -ResourceGroupName $resourceGroup -Location $location -Name "MyVNet" -AddressPrefix "10.0.0.0/16"
+    ```
+
+4. **Create a Subnet**:
+    ```powershell
+    Add-AzVirtualNetworkSubnetConfig -Name "MySubnet" -AddressPrefix "10.0.1.0/24" -VirtualNetwork (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName $resourceGroup)
+    ```
+
+5. **Create a Public IP Address**:
+    ```powershell
+    New-AzPublicIpAddress -ResourceGroupName $resourceGroup -Name "MyPublicIP" -Location $location -AllocationMethod Static
+    ```
+
+6. **Create a Network Security Group**:
+    ```powershell
+    New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroup -Location $location -Name "MyNSG"
+    ```
+
+7. **Create a Network Interface**:
+    ```powershell
+    New-AzNetworkInterface -ResourceGroupName $resourceGroup -Location $location -Name "MyNIC" -SubnetId (Get-AzVirtualNetworkSubnetConfig -VirtualNetworkName "MyVNet" -ResourceGroupName $resourceGroup -Name "MySubnet").Id -NetworkSecurityGroupId (Get-AzNetworkSecurityGroup -Name "MyNSG" -ResourceGroupName $resourceGroup).Id -PublicIpAddressId (Get-AzPublicIpAddress -Name "MyPublicIP" -ResourceGroupName $resourceGroup).Id
+    ```
+
+8. **Create the VM**:
+    ```powershell
+    New-AzVM -ResourceGroupName $resourceGroup -Location $location -Name $vmName -VirtualNetworkName "My
+
+VNet" -SubnetName "MySubnet" -SecurityGroupName "MyNSG" -PublicIpAddressName "MyPublicIP" -Credential $cred -ImageName "Win2019Datacenter"
+    ```
+
+---
+
